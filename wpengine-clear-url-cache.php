@@ -32,7 +32,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 /**
  * Main plugin information and requires.
  *
- * @package Twitter Watcher
+ * @package Clear URL Cache on WPEngine
  * @since 0.1
  * @copyright Copyright (C) Code for the People Ltd
  */
