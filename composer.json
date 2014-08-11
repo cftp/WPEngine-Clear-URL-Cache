@@ -1,0 +1,17 @@
+{
+  "name"       : "cftp/wpengine-clear-url-cache",
+  "description": "This WordPress plugin only works on WPEngine, and allows you to target a particular URL with an HTTP cache PURGE request.",
+  "keywords"   : ["wordpress"],
+  "type"       : "wordpress-plugin",
+  "license"    : "GPL-2.0",
+  "authors"    : [
+    {
+      "name"    : "Code For The People",
+      "homepage": "http://codeforthepeople.com"
+    }
+  ],
+  "require"    : {
+    "php": ">=5.2.4",
+    "composer/installers": "~1.0"
+  }
+}
