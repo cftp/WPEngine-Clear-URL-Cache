@@ -85,9 +85,17 @@ class CFTP_Clear_URL_Cache extends CFTP_Clear_URL_Cache_Plugin {
 		
 		$url = esc_url( $_POST[ 'cached_url' ] );
 
-		// A lot of the following code is cribbed from 
+		self::clear_url_cache( $url );
+
+		$this->set_admin_notice( "Issued a cache clearance for <var>$url</var>" );
+		wp_redirect( admin_url( '/tools.php?page=cftp_clear_url' ) );
+		exit;
+	}
+
+	public static function clear_url_cache( $url ) {
+		// A lot of the following code is cribbed from
 		// the WpeCommon::purge_varnish_cache method. A LOT.
-		
+
 		$post_parts = parse_url( $url );
 		$post_uri   = $post_parts['path'];
 		if ( ! empty( $post_parts['query'] ) )
@@ -100,39 +108,35 @@ class CFTP_Clear_URL_Cache extends CFTP_Clear_URL_Cache_Plugin {
 		// Hostname appears to be required without the protocol prefix, e.g.
 		// no 'http://'.
 		$hostname = $post_parts[ 'host' ];
-		
-        // Purge Varnish cache.
-        if ( WPE_CLUSTER_TYPE == "pod" )
-            $wpe_varnish_servers = array( "localhost" );
-        else if ( ! isset( $wpe_varnish_servers ) ) {
-            if ( WPE_CLUSTER_TYPE == "pod" )
-                $lbmaster            = "localhost";
-            else if ( ! defined( 'WPE_CLUSTER_ID' ) || ! WPE_CLUSTER_ID )
-                $lbmaster            = "lbmaster";
-            else if ( WPE_CLUSTER_ID >= 4 )
-                $lbmaster            = "localhost"; // so the current user sees the purge
-            else
-                $lbmaster            = "lbmaster-" . WPE_CLUSTER_ID;
-            $wpe_varnish_servers = array( $lbmaster );
-        }
 
-        // Debugging
-        if ( false ) {
-            $msg_key = rand();
-            $msg     = "Varnishes # $msg_key:\n" . "\nHostname:\n" . var_export( $hostname, true ) . "\nPath:\n" . var_export( $path, true );
+		// Purge Varnish cache.
+		if ( WPE_CLUSTER_TYPE == "pod" )
+			$wpe_varnish_servers = array( "localhost" );
+		else if ( ! isset( $wpe_varnish_servers ) ) {
+			if ( WPE_CLUSTER_TYPE == "pod" )
+				$lbmaster            = "localhost";
+			else if ( ! defined( 'WPE_CLUSTER_ID' ) || ! WPE_CLUSTER_ID )
+				$lbmaster            = "lbmaster";
+			else if ( WPE_CLUSTER_ID >= 4 )
+				$lbmaster            = "localhost"; // so the current user sees the purge
+			else
+				$lbmaster            = "lbmaster-" . WPE_CLUSTER_ID;
+			$wpe_varnish_servers = array( $lbmaster );
+		}
+
+		// Debugging
+		if ( false ) {
+			$msg_key = rand();
+			$msg     = "Varnishes # $msg_key:\n" . "\nHostname:\n" . var_export( $hostname, true ) . "\nPath:\n" . var_export( $path, true );
 			var_dump( $wpe_varnish_servers );
-            var_dump( $hostname );
-            var_dump( $path );
-        }
+			var_dump( $hostname );
+			var_dump( $path );
+		}
 		// SW/CFTP: Assume we're not using EC…
 		foreach ( $wpe_varnish_servers as $varnish ) {
 			error_log( "CFTP: PURGE, $varnish, 9002, $hostname, $path, array( ), 0" );
 			WpeCommon::http_request_async( "PURGE", $varnish, 9002, $hostname, $path, array( ), 0 );
 		}
-		
-		$this->set_admin_notice( "Issued a cache clearance for <var>$url</var>" );
-		wp_redirect( admin_url( '/tools.php?page=cftp_clear_url' ) );
-		exit;
 	}
 	
 	// CALLBACKS
